@@ -15,6 +15,7 @@
         <thead>
             <tr>
                 <th>Kode</th>
+                <th>Foto</th>
                 <th>Nama Barang</th>
                 <th>Stok</th>
                 <th>Satuan</th>
@@ -24,12 +25,17 @@
         </thead>
         <tbody>
             @forelse($barangs as $barang)
-                <tr>
-                    <td>{{ $barang->kode_barang }}</td>
-                    <td>{{ $barang->nama_barang }}</td>
-                    <td>{{ $barang->stok }}</td>
-                    <td>{{ $barang->satuan ?? '-' }}</td>
-                    <td>{{ $barang->kategori ?? '-' }}</td>
+                    <tr>
+                        <td>{{ $barang->kode_barang }}</td>
+                        <td>
+                            @if(!empty($barang->foto))
+                                <img src="{{ asset('storage/' . $barang->foto) }}" alt="foto" style="height:48px; object-fit:cover; margin-right:8px;">
+                            @endif
+                        </td>
+                        <td>{{ $barang->nama_barang }}</td>
+                        <td>{{ $barang->stok }}</td>
+                        <td>{{ $barang->satuan ?? '-' }}</td>
+                        <td>{{ $barang->kategori ?? '-' }}</td>
                     <td>
                         <a href="{{ route('barang.edit', $barang) }}" class="btn btn-sm btn-warning">Edit</a>
                         <form action="{{ route('barang.destroy', $barang) }}" method="POST" class="d-inline">

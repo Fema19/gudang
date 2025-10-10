@@ -34,6 +34,7 @@ class BarangController extends Controller
             'stok' => 'required|integer|min:0',
             'satuan' => 'nullable|string|max:50',
             'kategori' => 'nullable|string|max:100',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ]);
 
         // Generate kode otomatis: BRG001, BRG002, dst
@@ -41,13 +42,20 @@ class BarangController extends Controller
         $nextNumber = $lastBarang ? ((int) substr($lastBarang->kode_barang, 3)) + 1 : 1;
         $kode_barang = 'BRG' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
-        Barang::create([
+        $data = [
             'kode_barang' => $kode_barang,
             'nama_barang' => $request->nama_barang,
             'stok' => $request->stok,
             'satuan' => $request->satuan,
             'kategori' => $request->kategori,
-        ]);
+        ];
+
+        if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('barangs', 'public');
+            $data['foto'] = $path;
+        }
+
+        Barang::create($data);
 
         return redirect()->route('barang.index')->with('success', 'Barang berhasil ditambahkan.');
     }
@@ -70,9 +78,22 @@ class BarangController extends Controller
             'stok' => 'required|integer|min:0',
             'satuan' => 'nullable|string|max:50',
             'kategori' => 'nullable|string|max:100',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png,gif,webp|max:2048',
         ]);
 
-        $barang->update($request->only(['nama_barang', 'stok', 'satuan', 'kategori']));
+        $data = $request->only(['nama_barang', 'stok', 'satuan', 'kategori']);
+
+        if ($request->hasFile('foto')) {
+            // remove old foto if exists
+            if (!empty($barang->foto) && \Storage::disk('public')->exists($barang->foto)) {
+                \Storage::disk('public')->delete($barang->foto);
+            }
+
+            $path = $request->file('foto')->store('barangs', 'public');
+            $data['foto'] = $path;
+        }
+
+        $barang->update($data);
 
         return redirect()->route('barang.index')->with('success', 'Barang berhasil diperbarui.');
     }
@@ -82,6 +103,11 @@ class BarangController extends Controller
      */
     public function destroy(Barang $barang)
     {
+        // delete foto file if exists
+        if (!empty($barang->foto) && \Storage::disk('public')->exists($barang->foto)) {
+            \Storage::disk('public')->delete($barang->foto);
+        }
+
         $barang->delete();
 
         return redirect()->route('barang.index')->with('success', 'Barang berhasil dihapus.');

@@ -4,7 +4,7 @@
 <div class="container py-4">
     <h3 class="mb-3">Tambah Barang</h3>
 
-    <form action="{{ route('barang.store') }}" method="POST" class="card p-4 shadow-sm">
+    <form action="{{ route('barang.store') }}" method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
         @csrf
 
         <div class="mb-3">
@@ -25,6 +25,11 @@
         <div class="mb-3">
             <label for="kategori" class="form-label">Kategori</label>
             <input type="text" id="kategori" name="kategori" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label for="foto" class="form-label">Foto Barang (opsional)</label>
+            <input type="file" id="foto" name="foto" class="form-control" accept="image/*">
         </div>
 
         <button type="submit" class="btn btn-success">Simpan</button>

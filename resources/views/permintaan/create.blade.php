@@ -98,6 +98,11 @@
                         <div class="barang-grid">
                             @foreach ($barangs as $barang)
                                 <div class="barang-card">
+                                    @if(!empty($barang->foto))
+                                        <div class="mb-2" style="text-align:center;">
+                                            <img src="{{ asset('storage/' . $barang->foto) }}" alt="Foto {{ $barang->nama_barang }}" style="max-width:100%; height:120px; object-fit:cover; border-radius:6px;">
+                                        </div>
+                                    @endif
                                     <h6 class="barang-nama">{{ $barang->nama_barang }}</h6>
                                     <p><strong>Stok:</strong> {{ $barang->stok }}</p>
                                     <p><strong>Satuan:</strong> {{ $barang->satuan ?? '-' }}</p>
