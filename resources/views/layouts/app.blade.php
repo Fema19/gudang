@@ -17,7 +17,6 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a href="{{ route('barang.index') }}" class="nav-link">Stok Barang</a></li>
                     <li class="nav-item"><a href="{{ route('permintaan.index') }}" class="nav-link">Permintaan</a></li>
-                    <li class="nav-item"><a href="{{ route('permintaan.create') }}" class="nav-link">Buat Permintaan</a></li>
                 </ul>
             </div>
         </div>

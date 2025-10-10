@@ -21,6 +21,8 @@ use App\Http\Controllers\PermintaanController;
 Route::get('/', [PermintaanController::class, 'create'])->name('permintaan.create');
 Route::post('/permintaan', [PermintaanController::class, 'store'])->name('permintaan.store');
 
+//user
+
 
 // ============================
 // ⚙️ Operator (Manajemen Gudang)

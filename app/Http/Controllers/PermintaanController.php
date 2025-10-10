@@ -15,10 +15,10 @@ class PermintaanController extends Controller
         return view('operator.permintaan.index', compact('permintaans'));
     }
 
-    // Form tambah permintaan (bisa untuk user atau operator)
+    // Form tambah permintaan (untuk user) sekaligus mengirim data barang untuk modal
     public function create()
     {
-        $barangs = Barang::all();
+        $barangs = Barang::all(); // ambil semua stok
         return view('permintaan.create', compact('barangs'));
     }
 
@@ -34,10 +34,10 @@ class PermintaanController extends Controller
 
         Permintaan::create($validated + ['status' => 'pending']);
 
-        return redirect()->route('permintaan.index')->with('success', 'Permintaan berhasil dikirim dan menunggu konfirmasi operator.');
+        return redirect()->route('permintaan.create')->with('success', 'Permintaan berhasil dikirim dan menunggu konfirmasi operator.');
     }
 
-    // Ubah status jadi selesai
+    // Ubah status jadi selesai (operator)
     public function updateStatus($id)
     {
         $permintaan = Permintaan::findOrFail($id);
@@ -46,7 +46,7 @@ class PermintaanController extends Controller
         return redirect()->route('permintaan.index')->with('success', 'Permintaan telah diselesaikan.');
     }
 
-    // Menolak permintaan
+    // Menolak permintaan (operator)
     public function reject(Request $request, $id)
     {
         $request->validate([
@@ -59,7 +59,6 @@ class PermintaanController extends Controller
             'keterangan' => $request->keterangan,
         ]);
 
-        // Simpan notifikasi ke session user
         session()->flash('notif', "Permintaan Anda ditolak: {$request->keterangan}");
 
         return redirect()->route('permintaan.index')->with('error', 'Permintaan ditolak.');
