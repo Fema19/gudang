@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Permintaan;
 use App\Models\Barang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PermintaanController extends Controller
 {
@@ -40,10 +41,48 @@ class PermintaanController extends Controller
     // Ubah status jadi selesai (operator)
     public function updateStatus($id)
     {
-        $permintaan = Permintaan::findOrFail($id);
-        $permintaan->update(['status' => 'selesai']);
+        $permintaan = Permintaan::with('barang')->findOrFail($id);
 
-        return redirect()->route('permintaan.index')->with('success', 'Permintaan telah diselesaikan.');
+        // pastikan masih pending
+        if ($permintaan->status !== 'pending') {
+            return redirect()->route('permintaan.index')->with('error', 'Permintaan sudah diproses.');
+        }
+
+        $barang = $permintaan->barang;
+        if (!$barang) {
+            return redirect()->route('permintaan.index')->with('error', 'Data barang tidak ditemukan.');
+        }
+
+        $jumlahDiminta = (int) $permintaan->jumlah;
+
+        try {
+            DB::transaction(function () use ($permintaan, $barang, $jumlahDiminta) {
+                // reload with lock for update
+                $barang = Barang::where('id', $barang->id)->lockForUpdate()->first();
+
+                if ($barang->stok < $jumlahDiminta) {
+                    // throw exception to rollback
+                    throw new \Exception('Stok tidak mencukupi');
+                }
+
+                // kurangi stok
+                $barang->stok = $barang->stok - $jumlahDiminta;
+                $barang->save();
+
+                // update status permintaan
+                $permintaan->status = 'selesai';
+                $permintaan->save();
+            });
+        } catch (\Exception $e) {
+            // khusus message stok tidak mencukupi
+            if ($e->getMessage() === 'Stok tidak mencukupi') {
+                return redirect()->route('permintaan.index')->with('error', 'Stok tidak mencukupi');
+            }
+
+            return redirect()->route('permintaan.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+
+        return redirect()->route('permintaan.index')->with('success', 'Permintaan telah diterima dan stok diperbarui.');
     }
 
     // Menolak permintaan (operator)

@@ -56,6 +56,7 @@
                 <th>Nama Peminta</th>
                 <th>Ruangan</th>
                 <th>Jumlah</th>
+                <th>Stok Tersisa</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
@@ -68,6 +69,7 @@
                 <td>{{ $p->nama_peminta }}</td>
                 <td>{{ $p->nama_ruangan }}</td>
                 <td>{{ $p->jumlah }}</td>
+                <td>{{ $p->barang->stok ?? '-' }}</td>
                 <td>
                     @if ($p->status == 'pending')
                         <span class="badge bg-warning text-dark">Pending</span>
@@ -83,7 +85,7 @@
                         <form action="{{ route('permintaan.selesai', $p->id) }}" method="POST" class="inline-form">
                             @csrf
                             @method('PATCH')
-                            <button class="btn btn-success btn-sm">Selesai</button>
+                            <button class="btn btn-success btn-sm">Terima</button>
                         </form>
 
                         <!-- Tombol tolak -->
