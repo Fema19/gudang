@@ -44,7 +44,7 @@
                 <td>
                     @if ($p->status == 'pending')
                         <!-- Tombol selesai -->
-                        <form action="{{ route('permintaan.selesai', $p->id) }}" method="POST" style="display:inline;">
+                        <form action="{{ route('permintaan.selesai', $p->id) }}" method="POST" class="inline-form">
                             @csrf
                             @method('PATCH')
                             <button class="btn btn-success btn-sm">Selesai</button>

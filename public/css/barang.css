@@ -1,0 +1,566 @@
+/* ==========================================================================
+   GUDANG SISTEM - MAIN STYLESHEET
+   
+   STRUKTUR FILE:
+   1. /layouts/app.blade.php - Layout Utama & Navbar
+   2. /operator/barang/index.blade.php - Halaman Daftar Barang
+   3. /operator/barang/create.blade.php - Halaman Tambah Barang
+   4. /operator/barang/edit.blade.php - Halaman Edit Barang
+   5. /permintaan/create.blade.php - Halaman Permintaan Barang
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Variabel Warna Global - Digunakan di semua halaman
+   -------------------------------------------------------------------------- */
+:root {
+  /* Warna Utama */
+  --primary: #3498db;      /* Biru - tombol edit, link aktif */
+  --danger: #e74c3c;       /* Merah - tombol hapus */
+  --success: #2ecc71;      /* Hijau - tombol tambah */
+  --warning: #f1c40f;      /* Kuning - alert warning */
+  --info: #0dcaf0;         /* Biru Muda - info */
+  
+  /* Warna Teks */
+  --text-dark: #2f3542;    /* Teks Utama */
+  --text-muted: #6c757d;   /* Teks Sekunder */
+  
+  /* Warna Background */
+  --bg-light: #f5f6fa;     /* Background Light */
+  --bg-white: #ffffff;     /* Background White */
+  
+  /* Warna Border */
+  --border-light: #dee2e6;  /* Border Light */
+  --border-muted: #dcdde1;  /* Border Muted */
+}
+
+/* --------------------------------------------------------------------------
+   1. Layout Utama & Navbar (/layouts/app.blade.php)
+   -------------------------------------------------------------------------- */
+/* Layout Global */
+body {
+  background-color: var(--bg-light);
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  color: var(--text-dark);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: var(--bg-white);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+}
+
+/* Brand/Logo Styling */
+.navbar-brand {
+  font-size: 20px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  margin-right: 2rem;
+}
+
+.solar--box-bold {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230d6efd' d='m17.578 4.432l-2-1.05C13.822 2.461 12.944 2 12 2s-1.822.46-3.578 1.382l-.321.169l8.923 5.099l4.016-2.01c-.646-.732-1.688-1.279-3.462-2.21m4.17 3.534l-3.998 2V13a.75.75 0 0 1-1.5 0v-2.286l-3.5 1.75v9.44c.718-.179 1.535-.607 2.828-1.286l2-1.05c2.151-1.129 3.227-1.693 3.825-2.708c.597-1.014.597-2.277.597-4.8v-.117c0-1.893 0-3.076-.252-3.978M11.25 21.904v-9.44l-8.998-4.5C2 8.866 2 10.05 2 11.941v.117c0 2.525 0 3.788.597 4.802c.598 1.015 1.674 1.58 3.825 2.709l2 1.049c1.293.679 2.11 1.107 2.828 1.286M2.96 6.641l9.04 4.52l3.411-1.705l-8.886-5.078l-.103.054c-1.773.93-2.816 1.477-3.462 2.21'/%3E%3C/svg%3E");
+}
+
+.brand-text {
+  display: inline-block;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.brand-text .first-half { 
+  color: var(--text-dark); 
+}
+
+.brand-text .second-half { 
+  color: var(--primary); 
+}
+
+/* Navigation Links */
+.nav-link {
+  color: var(--text-dark) !important;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--primary) !important;
+}
+
+/* --------------------------------------------------------------------------
+   2. Halaman Daftar Barang (/operator/barang/index.blade.php)
+   -------------------------------------------------------------------------- */
+/* Card Container */
+.data-card {
+  background: var(--bg-white);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-light);
+  overflow: hidden;
+}
+
+/* Tabel Daftar Barang */
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.table thead {
+  background-color: var(--bg-light);
+}
+
+.table th {
+  padding: 1rem;
+  color: var(--text-dark);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.table td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.table tr:hover td {
+  background-color: var(--bg-light);
+}
+
+/* Gambar dalam Tabel */
+.table-img {
+  height: 48px;
+  width: auto;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+/* Tombol-tombol Halaman Index */
+/* Tombol Tambah Data */
+.btn-tambah {
+  background-color: rgba(46, 204, 113, 0.1);
+  color: var(--success);
+  border: 1px solid var(--success);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+.btn-tambah:hover {
+  background-color: var(--success);
+  color: var(--bg-white);
+}
+
+/* Tombol Edit Data */
+.btn-edit {
+  background-color: rgba(52, 152, 219, 0.1);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 0.375rem 0.75rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+.btn-edit:hover {
+  background-color: var(--primary);
+  color: var(--bg-white);
+}
+
+/* Tombol Hapus Data */
+.btn-hapus {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  padding: 0.375rem 0.75rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+.btn-hapus:hover {
+  background-color: var(--danger);
+  color: var(--bg-white);
+}
+
+/* Alert Sukses */
+.alert-success-custom {
+  background-color: rgba(52, 152, 219, 0.1);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+/* --------------------------------------------------------------------------
+   3. Halaman Tambah Barang (/operator/barang/create.blade.php)
+   -------------------------------------------------------------------------- */
+/* Container Form */
+.form-wrapper {
+  background-color: var(--bg-white);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Judul Halaman */
+.page-heading {
+  font-size: 1.4rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+}
+
+/* Form Elements */
+.form-control,
+.form-select {
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+  font-size: 14px;
+  padding: 8px 10px;
+  background-color: var(--bg-white);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary);
+  box-shadow: none;
+  outline: none;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--text-dark);
+}
+
+/* Preview Image */
+.preview-img {
+  max-height: 90px;
+  border-radius: 4px;
+}
+
+/* Custom Select Style */
+.custom-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6L1.41 0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+}
+
+/* ====================
+   ALERT & NOTIFIKASI 
+   ==================== */
+.alert-success-custom {
+  background-color: rgba(52, 152, 219, 0.1);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+/* ====================
+   IMAGE STYLES 
+   ==================== */
+.table-img {
+  height: 48px;
+  width: auto;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+/* ====================
+   UTILITY CLASSES 
+   ==================== */
+.page-title {
+  color: var(--text-dark);
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.text-muted {
+  color: var(--text-muted) !important;
+}
+
+/* ====================
+   RESPONSIVE STYLES 
+   ==================== */
+@media (max-width: 768px) {
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .btn {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .container {
+    padding: 0 10px;
+  }
+}
+
+/* ====================
+   MODAL STYLES 
+   ==================== */
+.modal-content {
+  border-radius: 8px;
+  border: none;
+}
+
+.modal-header {
+  background-color: var(--primary);
+  color: var(--bg-white);
+  border-radius: 8px 8px 0 0;
+}
+
+.btn-close-white {
+  filter: brightness(0) invert(1);
+}
+
+/* ====================
+   FORM BUTTON STYLES 
+   ==================== */
+/* Save Button - create.blade.php */
+.btn-save {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 0.5rem 1.5rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+.btn-save:hover,
+.btn-save:active {
+    background-color: var(--primary) !important;
+    color: var(--bg-white) !important;
+    border-color: var(--primary) !important;
+}
+
+/* Update Button - edit.blade.php */
+.btn-update {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 0.5rem 1.5rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+.btn-update:hover,
+.btn-update:active {
+    background-color: var(--primary) !important;
+    color: var(--bg-white) !important;
+    border-color: var(--primary) !important;
+}
+
+/* Back Button - create.blade.php & edit.blade.php */
+.btn-back {
+    background-color: rgba(108, 117, 125, 0.1);
+    color: var(--text-muted);
+    border: 1px solid var(--text-muted);
+    padding: 0.5rem 1.5rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+.btn-back:hover,
+.btn-back:active {
+    background-color: var(--text-muted) !important;
+    color: var(--bg-white) !important;
+    border-color: var(--text-muted) !important;
+}
+
+/* --------------------------------------------------------------------------
+   5. Halaman Permintaan Barang (/permintaan/create.blade.php)
+   -------------------------------------------------------------------------- */
+/* Layout Halaman */
+.request-container {
+    background-color: var(--bg-light);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    color: var(--text-dark);
+}
+
+/* Container Form Permintaan */
+.request-box {
+    background-color: var(--bg-white);
+    padding: 30px 35px;
+    border: 1px solid var(--border-light);
+    border-radius: 10px;
+    width: 100%;
+    max-width: 520px;
+}
+
+/* Request Form Elements */
+.request-box h4 {
+    color: var(--primary);
+}
+
+.request-box label {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.request-box .form-control,
+.request-box .form-select {
+    border-radius: 6px;
+    border: 1px solid var(--border-light);
+    font-size: 14px;
+    padding: 8px 10px;
+    background-color: var(--bg-white);
+}
+
+/* Custom Dropdown */
+.request-box .custom-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M1.41 0L6 4.58 10.59 0 12 1.41l-6 6-6-6L1.41 0z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+}
+
+.request-box .form-control:focus,
+.request-box .form-select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: none;
+}
+
+/* Request Buttons */
+.request-box .btn-primary {
+    background-color: var(--primary);
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.request-box .btn-outline-secondary {
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+/* Request Modal */
+.request-modal .modal-content {
+    border-radius: 8px;
+    border: none;
+}
+
+.request-modal .modal-header {
+    background-color: var(--primary);
+    color: var(--bg-white);
+    border-radius: 8px 8px 0 0;
+}
+
+/* Request Grid */
+.request-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .request-box {
+        padding: 25px;
+        margin: 10px;
+    }
+    .request-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* ====================
+   PAGE SPECIFIC STYLES
+   ==================== */
+/* Edit & Create Page */
+.page-heading {
+  font-size: 1.4rem;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+}
+
+.preview-img {
+  max-height: 90px;
+  border-radius: 4px;
+}
+
+.form-wrapper {
+  background-color: var(--bg-white);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Request Page */
+.request-title {
+  display: inline-block;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.title-underline {
+  display: block;
+  height: 5px;
+  width: 120px;
+  background-color: var(--primary);
+  border-radius: 10px;
+  margin: 5px auto 0;
+}
+
+.preview-img-modal {
+  max-width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* Inline Forms */
+.inline-form {
+  display: inline;
+}
+
+/* ====================
+   GRID LAYOUT 
+   ==================== */
+.barang-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 15px;
+}
+
+.barang-card {
+  border: 1px solid var(--border-muted);
+  border-radius: 6px;
+  background-color: var(--bg-light);
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.barang-nama {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--primary);
+  border-bottom: 1px solid var(--border-muted);
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}

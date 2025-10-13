@@ -7,19 +7,18 @@
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- CSS Eksternal -->
-    <link rel="stylesheet" href="{{ asset('css/request.css') }}">
+    <link href="{{ asset('css/barang.css') }}" rel="stylesheet">
 </head>
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div class="container">
-          <span class="solar--box-bold"></span>
-           <a class="navbar-brand fw-semibold" href="{{ url('/') }}">
-          <span style="color: #0d6efd;">Gudang</span><span style="color: #000;">Kantor</span>
+            <a class="navbar-brand" href="{{ url('/') }}">
+                <span class="solar--box-bold"></span>
+                <span class="brand-text">
+                    <span class="first-half">GUDANG</span><span class="second-half">KANTOR</span>
+                </span>
             </a>
-
         </div>
     </nav>
 
@@ -27,16 +26,9 @@
     <div class="container d-flex justify-content-center mt-5">
         <div class="request-box">
             <div class="text-center mb-4">
-                <h4 class="fw-semibold" style="display: inline-block; position: relative; padding-bottom: 10px;">
+                <h4 class="request-title fw-semibold">
                   Request Barang
-                  <span style="
-                    display: block;
-                    height: 5px;          
-                    width: 120px;         
-                    background-color: #0d6efd;
-                    border-radius: 10px;  
-                    margin: 5px auto 0;" 
-                   ></span>
+                  <span class="title-underline"></span>
                 </h4>
             </div>
 
@@ -99,8 +91,8 @@
                             @foreach ($barangs as $barang)
                                 <div class="barang-card">
                                     @if(!empty($barang->foto))
-                                        <div class="mb-2" style="text-align:center;">
-                                            <img src="{{ asset('storage/' . $barang->foto) }}" alt="Foto {{ $barang->nama_barang }}" style="max-width:100%; height:120px; object-fit:cover; border-radius:6px;">
+                                        <div class="mb-2 text-center">
+                                            <img src="{{ asset('storage/' . $barang->foto) }}" alt="Foto {{ $barang->nama_barang }}" class="preview-img-modal">
                                         </div>
                                     @endif
                                     <h6 class="barang-nama">{{ $barang->nama_barang }}</h6>
