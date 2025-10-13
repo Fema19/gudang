@@ -42,5 +42,10 @@ Route::prefix('operator')->group(function () {
     Route::patch('/permintaan/{permintaan}/selesai', [PermintaanController::class, 'updateStatus'])->name('permintaan.selesai');
     Route::post('/permintaan/{permintaan}/reject', [PermintaanController::class, 'reject'])->name('permintaan.reject');
     Route::delete('/permintaan/{permintaan}', [PermintaanController::class, 'destroy'])->name('permintaan.destroy');
+    Route::post('/permintaan/clear', [PermintaanController::class, 'clear'])->name('permintaan.clear');
+    // Trash & restore
+    Route::get('/permintaan/trash', [PermintaanController::class, 'trash'])->name('permintaan.trash');
+    Route::post('/permintaan/{id}/restore', [PermintaanController::class, 'restore'])->name('permintaan.restore');
+    Route::post('/permintaan/restore-all', [PermintaanController::class, 'restoreAll'])->name('permintaan.restoreAll');
 
 });

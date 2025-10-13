@@ -64,6 +64,38 @@ class PermintaanController extends Controller
         return redirect()->route('permintaan.index')->with('error', 'Permintaan ditolak.');
     }
 
+    // Hapus semua riwayat permintaan yang sudah diproses (selesai atau ditolak), tapi jangan hapus yang masih pending
+    public function clear()
+    {
+        // Pastikan hanya menghapus yang statusnya bukan 'pending'
+    $deletedCount = Permintaan::where('status', '!=', 'pending')->delete();
+
+    return redirect()->route('permintaan.index')->with('success', "Berhasil memindahkan {$deletedCount} riwayat permintaan yang sudah diproses ke trash (soft deleted). Anda dapat memulihkannya lewat fitur restore jika diperlukan.");
+    }
+
+    // Tampilkan daftar permintaan yang sudah di-soft-delete (trash)
+    public function trash()
+    {
+        $permintaans = Permintaan::onlyTrashed()->with('barang')->latest('deleted_at')->get();
+        return view('operator.permintaan.trash', compact('permintaans'));
+    }
+
+    // Restore satu permintaan dari trash
+    public function restore($id)
+    {
+        $permintaan = Permintaan::withTrashed()->findOrFail($id);
+        $permintaan->restore();
+
+        return redirect()->route('permintaan.trash')->with('success', 'Permintaan berhasil dipulihkan.');
+    }
+
+    // Restore semua permintaan di trash
+    public function restoreAll()
+    {
+        $restored = Permintaan::onlyTrashed()->restore();
+        return redirect()->route('permintaan.trash')->with('success', "Berhasil memulihkan {$restored} permintaan.");
+    }
+
     // Halaman notifikasi user
     public function notif()
     {

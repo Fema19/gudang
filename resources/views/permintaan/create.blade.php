@@ -27,7 +27,7 @@
         <div class="request-box">
             <div class="text-center mb-4">
                 <h4 class="request-title fw-semibold">
-                  Request Barang
+                  Permintaan Barang
                   <span class="title-underline"></span>
                 </h4>
             </div>
