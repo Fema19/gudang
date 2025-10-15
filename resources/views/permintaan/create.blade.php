@@ -10,13 +10,17 @@
   <link href="{{ asset('css/barang.css') }}" rel="stylesheet">
 </head>
 <body>
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-    <div class="container">
-      <a class="navbar-brand" href="{{ url('/') }}">
-        <span class="brand-text"><span class="first-half">GUDANG</span><span class="second-half">KANTOR</span></span>
-      </a>
-    </div>
-  </nav>
+        <div class="container">
+            <a class="navbar-brand" href="{{ url('/') }}">
+                <span class="solar--box-bold"></span>
+                <span class="brand-text">
+                    <span class="first-half">GUDANG</span><span class="second-half">KANTOR</span>
+                </span>
+            </a>
+        </div>
+    </nav>
 
   <div class="container d-flex justify-content-center mt-5">
     <div class="request-box shadow-sm p-4 rounded bg-white w-100" style="max-width: 600px;">

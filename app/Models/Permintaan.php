@@ -14,6 +14,7 @@ class Permintaan extends Model
         'nama_peminta',
         'nama_ruangan',
         'keterangan',
+        'jumlah',
         'status',
     ];
 

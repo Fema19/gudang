@@ -44,6 +44,10 @@ Route::post('/logout', [OperatorAuthController::class, 'logout'])->name('operato
 
         // Permintaan (operator)
         Route::get('/permintaan', [PermintaanController::class, 'index'])->name('permintaan.index');
+    // Statistik permintaan per bulan
+    Route::get('/permintaan/stats', [PermintaanController::class, 'stats'])->name('permintaan.stats');
+    // Export statistik (PDF/HTML)
+    Route::get('/permintaan/stats/export', [PermintaanController::class, 'exportStatsPdf'])->name('permintaan.stats.export');
         Route::patch('/permintaan/{permintaan}/selesai', [PermintaanController::class, 'updateStatus'])->name('permintaan.selesai');
         Route::post('/permintaan/{permintaan}/reject', [PermintaanController::class, 'reject'])->name('permintaan.reject');
         Route::delete('/permintaan/{permintaan}', [PermintaanController::class, 'destroy'])->name('permintaan.destroy');

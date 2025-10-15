@@ -9,7 +9,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('permintaans', function (Blueprint $table) {
+            // Cek dulu kalau foreign key-nya ada
             if (Schema::hasColumn('permintaans', 'barang_id')) {
+                // Lepas dulu foreign key constraint-nya
+                $table->dropForeign(['barang_id']);
+                // Baru hapus kolomnya
                 $table->dropColumn('barang_id');
             }
         });
@@ -19,7 +23,11 @@ return new class extends Migration
     {
         Schema::table('permintaans', function (Blueprint $table) {
             $table->unsignedBigInteger('barang_id')->nullable();
+
+            // Kalau perlu, tambahkan lagi foreign key-nya
+            $table->foreign('barang_id')->references('id')->on('barangs')->onDelete('cascade');
         });
     }
 };
+
 

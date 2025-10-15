@@ -12,6 +12,7 @@
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown">
                 <li>
                     <a class="dropdown-item" href="{{ route('permintaan.trash') }}">Trash</a>
+                    <a class="dropdown-item" href="{{ route('permintaan.stats') }}">Statistik</a>
                 </li>
                 <li>
                     <button class="dropdown-item text-danger" type="button" data-bs-toggle="modal" data-bs-target="#clearModal">Clear (soft-delete)</button>
