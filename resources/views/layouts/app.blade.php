@@ -26,6 +26,17 @@
                     <li class="nav-item">
                         <a href="{{ route('permintaan.index') }}" class="nav-link {{ request()->routeIs('permintaan.*') ? 'active' : '' }}">Permintaan</a>
                     </li>
+
+                    {{-- ✅ Tombol Logout --}}
+                    <li class="nav-item">
+                        <form action="{{ route('operator.logout') }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="nav-link btn btn-link p-0 m-0" style="border: none;">
+                                Logout
+                            </button>
+                        </form>
+                    </li>
+
                 </ul>
             </div>
         </div>
