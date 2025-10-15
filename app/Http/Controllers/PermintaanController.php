@@ -9,98 +9,92 @@ use Illuminate\Support\Facades\DB;
 
 class PermintaanController extends Controller
 {
-    // Menampilkan semua permintaan untuk operator
+    // Menampilkan semua permintaan (untuk operator)
     public function index()
     {
-    $permintaans = Permintaan::with('items.barang')->latest()->get();
-    return view('operator.permintaan.index', compact('permintaans'));
+        $permintaans = Permintaan::with('items.barang')->latest()->get();
+        return view('operator.permintaan.index', compact('permintaans'));
     }
 
-
-    // Form tambah permintaan (untuk user) sekaligus mengirim data barang untuk modal
+    // Form tambah permintaan (untuk user)
     public function create()
     {
-        $barangs = Barang::all(); // ambil semua stok
+        $barangs = Barang::all();
         return view('permintaan.create', compact('barangs'));
     }
 
     // Simpan permintaan baru
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'nama_peminta' => 'required|string',
-        'nama_ruangan' => 'required|string',
-        'barangs' => 'required|array', // array barang dan jumlah
-        'barangs.*.barang_id' => 'required|exists:barangs,id',
-        'barangs.*.jumlah' => 'required|integer|min:1',
-        'keterangan' => 'nullable|string',
-    ]);
-
-    DB::transaction(function () use ($validated) {
-        // Simpan data utama permintaan
-        $permintaan = Permintaan::create([
-            'nama_peminta' => $validated['nama_peminta'],
-            'nama_ruangan' => $validated['nama_ruangan'],
-            'keterangan' => $validated['keterangan'] ?? null,
+    {
+        $validated = $request->validate([
+            'nama_peminta' => 'required|string|max:255',
+            'nama_ruangan' => 'required|string|max:255',
+            'barangs' => 'required|array',
+            'barangs.*.barang_id' => 'required|exists:barangs,id',
+            'barangs.*.jumlah' => 'required|integer|min:1',
+            'keterangan' => 'nullable|string',
         ]);
 
-        // Simpan setiap barang yang diminta ke tabel permintaan_items
-        foreach ($validated['barangs'] as $item) {
-            DB::table('permintaan_items')->insert([
-                'permintaan_id' => $permintaan->id,
-                'barang_id' => $item['barang_id'],
-                'jumlah' => $item['jumlah'],
-                'created_at' => now(),
-                'updated_at' => now(),
+        DB::transaction(function () use ($validated) {
+            // Simpan data utama permintaan
+            $permintaan = Permintaan::create([
+                'nama_peminta' => $validated['nama_peminta'],
+                'nama_ruangan' => $validated['nama_ruangan'],
+                'keterangan' => $validated['keterangan'] ?? null,
+                'status' => 'pending', // tambahkan default status biar aman
             ]);
-        }
-    });
 
-    return redirect()->back()->with('success', 'Permintaan berhasil ditambahkan!');
-}
-
-
-    // Ubah status jadi selesai (operator)
-public function updateStatus($id)
-{
-    $permintaan = Permintaan::with('items.barang')->findOrFail($id);
-
-    if ($permintaan->status !== 'pending') {
-        return redirect()->route('permintaan.index')->with('error', 'Permintaan sudah diproses.');
-    }
-
-    try {
-        DB::transaction(function () use ($permintaan) {
-            // Loop setiap item permintaan
-            foreach ($permintaan->items as $item) {
-                $barang = Barang::where('id', $item->barang_id)->lockForUpdate()->first();
-
-                if (!$barang) {
-                    throw new \Exception("Data barang (ID {$item->barang_id}) tidak ditemukan");
-                }
-
-                if ($barang->stok < $item->jumlah) {
-                    throw new \Exception("Stok untuk {$barang->nama_barang} tidak mencukupi");
-                }
-
-                // Kurangi stok
-                $barang->stok -= $item->jumlah;
-                $barang->save();
+            // Simpan item barang
+            foreach ($validated['barangs'] as $item) {
+                DB::table('permintaan_items')->insert([
+                    'permintaan_id' => $permintaan->id,
+                    'barang_id' => $item['barang_id'],
+                    'jumlah' => $item['jumlah'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
             }
-
-            // Update status permintaan jadi selesai
-            $permintaan->status = 'selesai';
-            $permintaan->save();
         });
-    } catch (\Exception $e) {
-        return redirect()->route('permintaan.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+
+        return redirect()->back()->with('success', 'Permintaan berhasil ditambahkan!');
     }
 
-    return redirect()->route('permintaan.index')->with('success', 'Permintaan telah diterima dan stok diperbarui.');
-}
+    // Operator menerima permintaan & kurangi stok
+    public function updateStatus($id)
+    {
+        $permintaan = Permintaan::with('items.barang')->findOrFail($id);
 
+        if ($permintaan->status !== 'pending') {
+            return redirect()->route('permintaan.index')->with('error', 'Permintaan sudah diproses.');
+        }
 
-    // Menolak permintaan (operator)
+        try {
+            DB::transaction(function () use ($permintaan) {
+                foreach ($permintaan->items as $item) {
+                    $barang = Barang::lockForUpdate()->find($item->barang_id);
+
+                    if (!$barang) {
+                        throw new \Exception("Data barang (ID {$item->barang_id}) tidak ditemukan");
+                    }
+
+                    if ($barang->stok < $item->jumlah) {
+                        throw new \Exception("Stok untuk {$barang->nama_barang} tidak mencukupi");
+                    }
+
+                    $barang->stok -= $item->jumlah;
+                    $barang->save();
+                }
+
+                $permintaan->update(['status' => 'selesai']);
+            });
+        } catch (\Exception $e) {
+            return redirect()->route('permintaan.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+
+        return redirect()->route('permintaan.index')->with('success', 'Permintaan telah diterima dan stok diperbarui.');
+    }
+
+    // Menolak permintaan
     public function reject(Request $request, $id)
     {
         $request->validate([
@@ -118,23 +112,25 @@ public function updateStatus($id)
         return redirect()->route('permintaan.index')->with('error', 'Permintaan ditolak.');
     }
 
-    // Hapus semua riwayat permintaan yang sudah diproses (selesai atau ditolak), tapi jangan hapus yang masih pending
+    // Hapus riwayat yang sudah diproses
     public function clear()
     {
-        // Pastikan hanya menghapus yang statusnya bukan 'pending'
-    $deletedCount = Permintaan::where('status', '!=', 'pending')->delete();
+        $deletedCount = Permintaan::where('status', '!=', 'pending')->delete();
 
-    return redirect()->route('permintaan.index')->with('success', "Berhasil memindahkan {$deletedCount} riwayat permintaan yang sudah diproses ke trash (soft deleted). Anda dapat memulihkannya lewat fitur restore jika diperlukan.");
+        return redirect()->route('permintaan.index')->with(
+            'success',
+            "Berhasil memindahkan {$deletedCount} permintaan ke trash. Anda dapat memulihkannya lewat fitur restore."
+        );
     }
 
-    // Tampilkan daftar permintaan yang sudah di-soft-delete (trash)
+    // Tampilkan trash
     public function trash()
     {
         $permintaans = Permintaan::onlyTrashed()->with('items.barang')->latest('deleted_at')->get();
         return view('operator.permintaan.trash', compact('permintaans'));
     }
 
-    // Restore satu permintaan dari trash
+    // Restore satu permintaan
     public function restore($id)
     {
         $permintaan = Permintaan::withTrashed()->findOrFail($id);
@@ -143,7 +139,7 @@ public function updateStatus($id)
         return redirect()->route('permintaan.trash')->with('success', 'Permintaan berhasil dipulihkan.');
     }
 
-    // Restore semua permintaan di trash
+    // Restore semua permintaan
     public function restoreAll()
     {
         $restored = Permintaan::onlyTrashed()->restore();
