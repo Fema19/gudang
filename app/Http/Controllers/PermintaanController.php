@@ -12,9 +12,10 @@ class PermintaanController extends Controller
     // Menampilkan semua permintaan untuk operator
     public function index()
     {
-        $permintaans = Permintaan::with('barang')->latest()->get();
-        return view('operator.permintaan.index', compact('permintaans'));
+    $permintaans = Permintaan::with('items.barang')->latest()->get();
+    return view('operator.permintaan.index', compact('permintaans'));
     }
+
 
     // Form tambah permintaan (untuk user) sekaligus mengirim data barang untuk modal
     public function create()
@@ -25,65 +26,79 @@ class PermintaanController extends Controller
 
     // Simpan permintaan baru
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'barang_id' => 'required|exists:barangs,id',
-            'nama_peminta' => 'required|string|max:100',
-            'nama_ruangan' => 'required|string|max:100',
-            'jumlah' => 'required|integer|min:1',
+{
+    $validated = $request->validate([
+        'nama_peminta' => 'required|string',
+        'nama_ruangan' => 'required|string',
+        'barangs' => 'required|array', // array barang dan jumlah
+        'barangs.*.barang_id' => 'required|exists:barangs,id',
+        'barangs.*.jumlah' => 'required|integer|min:1',
+        'keterangan' => 'nullable|string',
+    ]);
+
+    DB::transaction(function () use ($validated) {
+        // Simpan data utama permintaan
+        $permintaan = Permintaan::create([
+            'nama_peminta' => $validated['nama_peminta'],
+            'nama_ruangan' => $validated['nama_ruangan'],
+            'keterangan' => $validated['keterangan'] ?? null,
         ]);
 
-        Permintaan::create($validated + ['status' => 'pending']);
+        // Simpan setiap barang yang diminta ke tabel permintaan_items
+        foreach ($validated['barangs'] as $item) {
+            DB::table('permintaan_items')->insert([
+                'permintaan_id' => $permintaan->id,
+                'barang_id' => $item['barang_id'],
+                'jumlah' => $item['jumlah'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+    });
 
-        return redirect()->route('permintaan.create')->with('success', 'Permintaan berhasil dikirim dan menunggu konfirmasi operator.');
-    }
+    return redirect()->back()->with('success', 'Permintaan berhasil ditambahkan!');
+}
+
 
     // Ubah status jadi selesai (operator)
-    public function updateStatus($id)
-    {
-        $permintaan = Permintaan::with('barang')->findOrFail($id);
+public function updateStatus($id)
+{
+    $permintaan = Permintaan::with('items.barang')->findOrFail($id);
 
-        // pastikan masih pending
-        if ($permintaan->status !== 'pending') {
-            return redirect()->route('permintaan.index')->with('error', 'Permintaan sudah diproses.');
-        }
+    if ($permintaan->status !== 'pending') {
+        return redirect()->route('permintaan.index')->with('error', 'Permintaan sudah diproses.');
+    }
 
-        $barang = $permintaan->barang;
-        if (!$barang) {
-            return redirect()->route('permintaan.index')->with('error', 'Data barang tidak ditemukan.');
-        }
+    try {
+        DB::transaction(function () use ($permintaan) {
+            // Loop setiap item permintaan
+            foreach ($permintaan->items as $item) {
+                $barang = Barang::where('id', $item->barang_id)->lockForUpdate()->first();
 
-        $jumlahDiminta = (int) $permintaan->jumlah;
-
-        try {
-            DB::transaction(function () use ($permintaan, $barang, $jumlahDiminta) {
-                // reload with lock for update
-                $barang = Barang::where('id', $barang->id)->lockForUpdate()->first();
-
-                if ($barang->stok < $jumlahDiminta) {
-                    // throw exception to rollback
-                    throw new \Exception('Stok tidak mencukupi');
+                if (!$barang) {
+                    throw new \Exception("Data barang (ID {$item->barang_id}) tidak ditemukan");
                 }
 
-                // kurangi stok
-                $barang->stok = $barang->stok - $jumlahDiminta;
-                $barang->save();
+                if ($barang->stok < $item->jumlah) {
+                    throw new \Exception("Stok untuk {$barang->nama_barang} tidak mencukupi");
+                }
 
-                // update status permintaan
-                $permintaan->status = 'selesai';
-                $permintaan->save();
-            });
-        } catch (\Exception $e) {
-            // khusus message stok tidak mencukupi
-            if ($e->getMessage() === 'Stok tidak mencukupi') {
-                return redirect()->route('permintaan.index')->with('error', 'Stok tidak mencukupi');
+                // Kurangi stok
+                $barang->stok -= $item->jumlah;
+                $barang->save();
             }
 
-            return redirect()->route('permintaan.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
-        }
-
-        return redirect()->route('permintaan.index')->with('success', 'Permintaan telah diterima dan stok diperbarui.');
+            // Update status permintaan jadi selesai
+            $permintaan->status = 'selesai';
+            $permintaan->save();
+        });
+    } catch (\Exception $e) {
+        return redirect()->route('permintaan.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
     }
+
+    return redirect()->route('permintaan.index')->with('success', 'Permintaan telah diterima dan stok diperbarui.');
+}
+
 
     // Menolak permintaan (operator)
     public function reject(Request $request, $id)
@@ -115,7 +130,7 @@ class PermintaanController extends Controller
     // Tampilkan daftar permintaan yang sudah di-soft-delete (trash)
     public function trash()
     {
-        $permintaans = Permintaan::onlyTrashed()->with('barang')->latest('deleted_at')->get();
+        $permintaans = Permintaan::onlyTrashed()->with('items.barang')->latest('deleted_at')->get();
         return view('operator.permintaan.trash', compact('permintaans'));
     }
 

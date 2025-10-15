@@ -8,22 +8,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Permintaan extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
-    'barang_id',
-    'nama_peminta',
-    'nama_ruangan',
-    'jumlah',
-    'status',
-    'keterangan',
-];
+        'nama_peminta',
+        'nama_ruangan',
+        'keterangan',
+        'status',
+    ];
 
-
-    // Relasi ke Barang
-    public function barang()
-    {
-        return $this->belongsTo(Barang::class);
-    }
+    // Relasi ke tabel permintaan_items
+    public function items()
+{
+    return $this->hasMany(\App\Models\PermintaanItem::class, 'permintaan_id');
+}
 }
