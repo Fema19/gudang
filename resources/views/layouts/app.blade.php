@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gudang Kantor</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{{ asset('css/barang.css') }}" rel="stylesheet">
 </head>
 <body>
@@ -19,25 +20,29 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a href="{{ route('barang.index') }}" class="nav-link {{ request()->routeIs('barang.*') ? 'active' : '' }}">Stok Barang</a>
                     </li>
                     <li class="nav-item">
                         <a href="{{ route('permintaan.index') }}" class="nav-link {{ request()->routeIs('permintaan.*') ? 'active' : '' }}">Permintaan</a>
                     </li>
-
-                    {{-- ✅ Tombol Logout --}}
-                    <li class="nav-item">
-                        <form action="{{ route('operator.logout') }}" method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit" class="nav-link btn btn-link p-0 m-0" style="border: none;">
-                                Logout
-                            </button>
-                        </form>
-                    </li>
-
                 </ul>
+
+                {{-- User Profile & Logout --}}
+                <div class="d-flex align-items-center border-start ps-3">
+                    <div class="text-end me-3">
+                        <div class="small text-muted">Operator</div>
+                    </div>
+                    <form action="{{ route('operator.logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-outline-danger btn-sm" 
+                            style="transition: all 0.3s ease; border-radius: 6px; padding: 6px 16px;">
+                            <i class="bi bi-box-arrow-right me-1"></i>
+                            Logout
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </nav>
