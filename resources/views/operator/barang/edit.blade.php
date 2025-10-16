@@ -46,13 +46,13 @@
                     <input type="file" id="foto" name="foto" class="form-control form-control-sm" accept="image/*">
         </div>
 
-        <div class="d-flex justify-content-center gap-3 mt-4">
-            <button type="submit" class="btn btn-update btn-sm">
-                <i class="fas fa-save"></i> Update
-            </button>
-            <a href="{{ route('barang.index') }}" class="btn btn-back btn-sm">
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ route('barang.index') }}" class="btn btn-back">
                 <i class="fas fa-arrow-left"></i> Kembali
             </a>
+            <button type="submit" class="btn btn-update">
+                <i class="fas fa-save"></i> Update
+            </button>
         </div>
             </form>
         </div>
