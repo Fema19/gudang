@@ -13,6 +13,7 @@ class PermintaanItem extends Model
         'permintaan_id',
         'barang_id',
         'jumlah',
+        'catatan'
     ];
 
     public function permintaan()

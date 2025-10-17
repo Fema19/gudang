@@ -13,6 +13,7 @@ return new class extends Migration
             $table->foreignId('permintaan_id')->constrained('permintaans')->onDelete('cascade');
             $table->foreignId('barang_id')->constrained('barangs')->onDelete('cascade');
             $table->integer('jumlah');
+            $table->text('catatan')->nullable(); // ✅ Tambahkan kolom ini
             $table->timestamps();
         });
     }
