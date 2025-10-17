@@ -14,6 +14,7 @@
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
     <div class="container">
       <a class="navbar-brand" href="{{ url('/') }}">
+        <span class="solar--box-bold"></span>
         <span class="brand-text">
           <span class="first-half">GUDANG</span><span class="second-half">KANTOR</span>
         </span>

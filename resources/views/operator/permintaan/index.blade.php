@@ -12,6 +12,7 @@
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown">
                 <li>
                     <a class="dropdown-item" href="{{ route('permintaan.trash') }}">Trash</a>
+                     <a class="dropdown-item" href="{{ route('permintaan.stats') }}">Statistik</a>
                 </li>
                 <li>
                     <button class="dropdown-item text-danger" type="button" data-bs-toggle="modal" data-bs-target="#clearModal">Clear (soft-delete)</button>
@@ -60,63 +61,84 @@
                 <th>Aksi</th>
             </tr>
         </thead>
-        <tbody>
-            @foreach ($permintaans as $p)
-            <tr>
-                <td>{{ $loop->iteration }}</td>
-                <td>{{ $p->barang->nama_barang ?? '-' }}</td>
-                <td>{{ $p->nama_peminta }}</td>
-                <td>{{ $p->nama_ruangan }}</td>
-                <td>{{ $p->jumlah }}</td>
-                <td>
-                    @if ($p->status == 'pending')
-                        <span class="badge bg-warning text-dark">Pending</span>
-                    @elseif ($p->status == 'selesai')
-                        <span class="badge bg-success">Selesai</span>
-                    @else
-                        <span class="badge bg-danger">Ditolak</span>
-                    @endif
-                </td>
-                <td>
-                    @if ($p->status == 'pending')
-                        <!-- Tombol selesai -->
-                        <form action="{{ route('permintaan.selesai', $p->id) }}" method="POST" class="inline-form">
-                            @csrf
-                            @method('PATCH')
-                            <button class="btn btn-success btn-sm">Selesai</button>
-                        </form>
+         <tbody>
+                @foreach ($permintaans as $p)
+                <tr>
+                    <td>{{ $loop->iteration }}</td>
 
-                        <!-- Tombol tolak -->
-                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $p->id }}">
-                            Tolak
-                        </button>
+                    {{-- Barang yang diminta --}}
+                    <td>
+                        <ul class="mb-0">
+                            @foreach ($p->items as $item)
+                                <li>
+                                    {{ $item->barang->nama_barang ?? '-' }} 
+                                    (<strong>{{ $item->jumlah }}</strong>)
+                                    @if ($item->catatan)
+                                        <br><small class="text-muted">Catatan: {{ $item->catatan }}</small>
+                                    @endif
+                                </li>
+                            @endforeach
+                        </ul>
+                    </td>
 
-                        <!-- Modal tolak -->
-                        <div class="modal fade" id="rejectModal{{ $p->id }}" tabindex="-1">
-                            <div class="modal-dialog">
-                                <form action="{{ route('permintaan.reject', $p->id) }}" method="POST">
-                                    @csrf
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Tolak Permintaan</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <td>{{ $p->nama_peminta }}</td>
+                    <td>{{ $p->nama_ruangan }}</td>
+
+                    {{-- Jumlah total semua barang --}}
+                    <td>{{ $p->items->sum('jumlah') }}</td>
+
+                    {{-- Status --}}
+                    <td>
+                        @if ($p->status == 'pending')
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        @elseif ($p->status == 'selesai')
+                            <span class="badge bg-success">Selesai</span>
+                        @else
+                            <span class="badge bg-danger">Ditolak</span>
+                        @endif
+                    </td>
+
+                    {{-- Aksi --}}
+                    <td>
+                        @if ($p->status == 'pending')
+                            <form action="{{ route('permintaan.selesai', $p->id) }}" method="POST" class="d-inline">
+                                @csrf
+                                @method('PATCH')
+                                <button class="btn btn-success btn-sm">Selesai</button>
+                            </form>
+
+                            <!-- Tombol tolak -->
+                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $p->id }}">
+                                Tolak
+                            </button>
+
+                            <!-- Modal tolak -->
+                            <div class="modal fade" id="rejectModal{{ $p->id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <form action="{{ route('permintaan.reject', $p->id) }}" method="POST">
+                                        @csrf
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Tolak Permintaan</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <textarea name="keterangan" class="form-control" placeholder="Alasan penolakan..." required></textarea>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                <button type="submit" class="btn btn-danger">Tolak</button>
+                                            </div>
                                         </div>
-                                        <div class="modal-body">
-                                            <textarea name="keterangan" class="form-control" placeholder="Alasan penolakan..." required></textarea>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                            <button type="submit" class="btn btn-danger">Tolak</button>
-                                        </div>
-                                    </div>
-                                </form>
+                                    </form>
+                                </div>
                             </div>
-                        </div>
-                    @endif
-                </td>
-            </tr>
-            @endforeach
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
         </tbody>
+
     </table>
 </div>
 @endsection

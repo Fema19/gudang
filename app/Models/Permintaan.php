@@ -20,7 +20,15 @@ class Permintaan extends Model
 
     // Relasi ke tabel permintaan_items
     public function items()
-{
-    return $this->hasMany(\App\Models\PermintaanItem::class, 'permintaan_id');
+    {
+        return $this->hasMany(\App\Models\PermintaanItem::class, 'permintaan_id');
+    }
+    
+    // Relasi ke tabel barangs
+    public function barang()
+    {
+        return $this->belongsTo(\App\Models\Barang::class, 'barang_id');
+    }
 }
-}
+
+    

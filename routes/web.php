@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\PermintaanController;
+use App\Http\Controllers\OperatorAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,12 @@ Route::post('/permintaan', [PermintaanController::class, 'store'])->name('permin
 // ============================
 // ⚙️ Operator (Manajemen Gudang)
 // ============================
+
+// 🔐 Login / Logout Operator
+    Route::get('/login', [OperatorAuthController::class, 'showLoginForm'])->name('operator.login');
+    Route::post('/login', [OperatorAuthController::class, 'login'])->name('operator.login.post'); // HARUS SAMA
+    Route::post('/logout', [OperatorAuthController::class, 'logout'])->name('operator.logout');
+
 Route::prefix('operator')->group(function () {
 
     // CRUD Barang
@@ -48,4 +55,10 @@ Route::prefix('operator')->group(function () {
     Route::post('/permintaan/{id}/restore', [PermintaanController::class, 'restore'])->name('permintaan.restore');
     Route::post('/permintaan/restore-all', [PermintaanController::class, 'restoreAll'])->name('permintaan.restoreAll');
 
+
+    // Statistik permintaan per bulan
+    Route::get('/permintaan/stats', [PermintaanController::class, 'stats'])->name('permintaan.stats');
+    // Export statistik (PDF/HTML)
+    Route::get('/permintaan/stats/export', [PermintaanController::class, 'exportStatsPdf'])->name('permintaan.stats.export');
 });
+
