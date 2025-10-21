@@ -16,6 +16,7 @@ class Permintaan extends Model
         'keterangan',
         'jumlah',
         'status',
+        'tanda_tangan',
     ];
 
     // Relasi ke tabel permintaan_items

@@ -12,14 +12,14 @@
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown">
                 <li>
                     <a class="dropdown-item" href="{{ route('permintaan.trash') }}">Trash</a>
-                     <a class="dropdown-item" href="{{ route('permintaan.stats') }}">Statistik</a>
+                    <a class="dropdown-item" href="{{ route('permintaan.stats') }}">Statistik</a>
                 </li>
                 <li>
                     <button class="dropdown-item text-danger" type="button" data-bs-toggle="modal" data-bs-target="#clearModal">Clear (soft-delete)</button>
                 </li>
             </ul>
         </div>
-        
+
         <!-- Modal konfirmasi Clear -->
         <div class="modal fade" id="clearModal" tabindex="-1" aria-labelledby="clearModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -29,7 +29,8 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        Yakin ingin menghapus semua riwayat permintaan yang sudah diproses (diterima/ditolak)? Tindakan ini akan memindahkan data ke trash (soft delete) dan dapat dipulihkan jika perlu.
+                        Yakin ingin menghapus semua riwayat permintaan yang sudah diproses (diterima/ditolak)? 
+                        Tindakan ini akan memindahkan data ke trash (soft delete) dan dapat dipulihkan jika perlu.
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -49,7 +50,7 @@
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
-    <table class="table table-bordered">
+    <table class="table table-bordered align-middle text-center">
         <thead class="table-secondary">
             <tr>
                 <th>#</th>
@@ -57,17 +58,18 @@
                 <th>Nama Peminta</th>
                 <th>Ruangan</th>
                 <th>Jumlah</th>
+                <th>Tanda Tangan</th>
                 <th>Status</th>
                 <th>Aksi</th>
             </tr>
         </thead>
-         <tbody>
-                @foreach ($permintaans as $p)
+        <tbody>
+            @foreach ($permintaans as $p)
                 <tr>
                     <td>{{ $loop->iteration }}</td>
 
                     {{-- Barang yang diminta --}}
-                    <td>
+                    <td class="text-start">
                         <ul class="mb-0">
                             @foreach ($p->items as $item)
                                 <li>
@@ -81,11 +83,23 @@
                         </ul>
                     </td>
 
-                    <td>{{ $p->nama_peminta }}</td>
-                    <td>{{ $p->nama_ruangan }}</td>
+                    {{-- Nama peminta dan waktu --}}
+                    <td>
+                        {{ $p->nama_peminta }}<br>
+                        <small class="text-muted">{{ $p->created_at->format('d M Y, H:i') }} WIB</small>
+                    </td>
 
-                    {{-- Jumlah total semua barang --}}
+                    <td>{{ $p->nama_ruangan }}</td>
                     <td>{{ $p->items->sum('jumlah') }}</td>
+
+                    {{-- Kolom tanda tangan --}}
+                    <td class="text-center">
+                        @if($p->tanda_tangan)
+                            <img src="{{ asset('storage/' . $p->tanda_tangan) }}" alt="Tanda Tangan" style="width: 80px; height: auto;">
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </td>
 
                     {{-- Status --}}
                     <td>
@@ -136,9 +150,8 @@
                         @endif
                     </td>
                 </tr>
-                @endforeach
+            @endforeach
         </tbody>
-
     </table>
 </div>
 @endsection

@@ -46,7 +46,7 @@
         </button>
       </div>
 
-      <form action="{{ route('permintaan.store') }}" method="POST" id="multiForm">
+       <form action="{{ route('permintaan.store') }}" method="POST" enctype="multipart/form-data" id="multiForm">
         @csrf
 
         <div class="mb-3">
@@ -69,6 +69,23 @@
         <div class="mb-3">
           <label>Nama Ruangan</label>
           <input type="text" name="nama_ruangan" class="form-control" required>
+        </div>
+
+        <!-- 🖊️ Area Tanda Tangan -->
+        <div class="mb-4">
+          <label for="signature" class="form-label fw-semibold">Tanda Tangan Peminta</label>
+          <p class="text-muted small mb-2">Silakan tanda tangan di bawah ini menggunakan mouse atau sentuhan layar.</p>
+
+          <div class="border rounded p-2 bg-light">
+            <canvas id="signature-pad" width="500" height="200" style="width: 100%; border: 1px solid #ccc; border-radius: 8px;"></canvas>
+          </div>
+
+          <div class="d-flex justify-content-end mt-2 gap-2">
+            <button type="button" class="btn btn-sm btn-secondary" id="clear-signature">Hapus</button>
+          </div>
+
+          <!-- Hidden input untuk menyimpan hasil tanda tangan -->
+          <input type="hidden" name="tanda_tangan" id="tanda_tangan">
         </div>
 
         <div id="barangList" class="mt-4">
@@ -118,6 +135,9 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Signature Pad Library -->
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -132,8 +152,6 @@
         const stok = selectedOption.dataset.stok;
 
         if (!id) return;
-
-        // Cegah duplikasi barang
         if (document.getElementById(`barang-item-${id}`)) return;
 
         emptyText.style.display = "none";
@@ -160,12 +178,9 @@
           </div>
         `;
         list.appendChild(div);
-
-        // Reset dropdown
         this.value = "";
       });
 
-      // Delegasi event untuk + - dan hapus
       list.addEventListener("click", function (e) {
         if (e.target.classList.contains("plus-btn")) {
           const input = e.target.parentElement.querySelector("input[type='number']");
@@ -176,6 +191,24 @@
         } else if (e.target.classList.contains("remove-btn")) {
           e.target.closest(".border").remove();
           if (list.querySelectorAll(".border").length === 0) emptyText.style.display = "block";
+        }
+      });
+
+      // ✍️ Inisialisasi Signature Pad
+      const canvas = document.getElementById("signature-pad");
+      const signaturePad = new SignaturePad(canvas);
+      const clearBtn = document.getElementById("clear-signature");
+      const inputTandaTangan = document.getElementById("tanda_tangan");
+
+      // Tombol hapus
+      clearBtn.addEventListener("click", () => signaturePad.clear());
+
+      // Sebelum submit, simpan tanda tangan ke hidden input (tidak wajib)
+      document.getElementById("multiForm").addEventListener("submit", function (e) {
+        if (!signaturePad.isEmpty()) {
+          inputTandaTangan.value = signaturePad.toDataURL("image/png");
+        } else {
+          inputTandaTangan.value = "";
         }
       });
     });
