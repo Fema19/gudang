@@ -14,8 +14,8 @@ class InfoBarangController extends Controller
      */
     public function masuk()
     {
-        // Ambil semua barang masuk (data barang terbaru duluan)
-        $barangs = Barang::orderBy('created_at', 'desc')->get();
+    // Ambil semua barang dengan histories (data barang terbaru duluan)
+    $barangs = Barang::with('histories')->orderBy('created_at', 'desc')->get();
 
         return view('operator.infobarang.masuk', compact('barangs'));
     }

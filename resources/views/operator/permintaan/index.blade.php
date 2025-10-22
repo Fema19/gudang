@@ -53,7 +53,7 @@
     <table class="table table-bordered align-middle text-center">
         <thead class="table-secondary">
             <tr>
-                <th>#</th>
+                <th>No</th>
                 <th>Barang</th>
                 <th>Nama Peminta</th>
                 <th>Ruangan</th>

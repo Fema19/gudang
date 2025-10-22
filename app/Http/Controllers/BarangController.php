@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Barang;
 use Illuminate\Http\Request;
+use App\Models\BarangHistory;
 
 class BarangController extends Controller
 {
@@ -55,7 +56,17 @@ class BarangController extends Controller
             $data['foto'] = $path;
         }
 
-        Barang::create($data);
+        $barang = Barang::create($data);
+
+        // record creation history
+        BarangHistory::create([
+            'barang_id' => $barang->id,
+            'type' => 'created',
+            'qty' => $barang->stok,
+            'stok_before' => null,
+            'stok_after' => $barang->stok,
+            'note' => 'Barang dibuat',
+        ]);
 
         return redirect()->route('barang.index')->with('success', 'Barang berhasil ditambahkan.');
     }
@@ -93,7 +104,21 @@ class BarangController extends Controller
             $data['foto'] = $path;
         }
 
+        $stokBefore = $barang->stok;
+
         $barang->update($data);
+
+        // if stok changed, record history
+        if (array_key_exists('stok', $data) && $data['stok'] != $stokBefore) {
+            BarangHistory::create([
+                'barang_id' => $barang->id,
+                'type' => 'stock_changed',
+                'qty' => $data['stok'] - $stokBefore,
+                'stok_before' => $stokBefore,
+                'stok_after' => $data['stok'],
+                'note' => 'Perubahan stok melalui edit barang',
+            ]);
+        }
 
         return redirect()->route('barang.index')->with('success', 'Barang berhasil diperbarui.');
     }

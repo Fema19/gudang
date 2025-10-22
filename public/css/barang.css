@@ -97,24 +97,42 @@ body {
 /* Navigation Links */
 .nav-link {
   color: var(--text-dark) !important;
-  transition: all 0.3s ease;
-  padding: 8px 16px !important;
-  border-radius: 30px;
+  transition: color 0.3s ease;
+  padding: 4px 16px !important;
   margin: 0 4px;
   position: relative;
   font-weight: 500;
+  text-decoration: none;
 }
 
-.nav-link:hover {
-  color: var(--primary) !important;
-  background: rgba(52, 152, 219, 0.08);
+/* Underline pseudo-element */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;                 /* Mulai dari kanan */
+  height: 2px;
+  width: 0;                  /* Awalnya tidak terlihat */
+  background-color: var(--primary);
+  transition: width 0.3s ease, left 0.3s ease, right 0.3s ease;
 }
 
+/* Hover efek: underline muncul dari kanan ke kiri */
+.nav-link:hover::after,
+.nav-link.active::after {
+  left: 0;                   /* Tepi kiri */
+  right: auto;
+  width: 100%;               /* Panjang penuh */
+}
+
+/* Hover text color */
+.nav-link:hover,
 .nav-link.active {
   color: var(--primary) !important;
-  background: rgba(52, 152, 219, 0.1);
-  box-shadow: inset 0 0 0 1px rgba(52, 152, 219, 0.2);
+  background: none !important;
+  text-decoration: none;      /* Hapus text-decoration bawaan */
 }
+
 
 /* --------------------------------------------------------------------------
    2. Halaman Daftar Barang (/operator/barang/index.blade.php)
@@ -522,90 +540,7 @@ label {
 @media (max-width: 768px) {
     .request-box {
         padding: 25px;
-        margin: 10px;
-    }
-    .request-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-}
 
-/* ====================
-   PAGE SPECIFIC STYLES
-   ==================== */
-/* Edit & Create Page */
-.page-heading {
-  font-size: 1.4rem;
-  color: var(--text-dark);
-  margin-bottom: 1rem;
-}
 
-.preview-img {
-  max-height: 90px;
-  border-radius: 4px;
-}
-
-.form-wrapper {
-  background-color: var(--bg-white);
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-/* Request Page */
-.request-title {
-  display: inline-block;
-  position: relative;
-  padding-bottom: 10px;
-}
-
-.title-underline {
-  display: block;
-  height: 5px;
-  width: 120px;
-  background-color: var(--primary);
-  border-radius: 10px;
-  margin: 5px auto 0;
-}
-
-.preview-img-modal {
-  max-width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 6px;
-}
-
-.text-center {
-  text-align: center;
-}
-
-/* Inline Forms */
-.inline-form {
-  display: inline;
-}
-
-/* ====================
-   GRID LAYOUT 
-   ==================== */
-.barang-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 12px;
-  padding: 15px;
-}
-
-.barang-card {
-  border: 1px solid var(--border-muted);
-  border-radius: 6px;
-  background-color: var(--bg-light);
-  padding: 12px 14px;
-  font-size: 14px;
-}
-
-.barang-nama {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--primary);
-  border-bottom: 1px solid var(--border-muted);
-  padding-bottom: 4px;
-  margin-bottom: 8px;
+  }
 }

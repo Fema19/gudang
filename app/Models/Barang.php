@@ -17,4 +17,9 @@ class Barang extends Model
         'kategori',
         'foto',
     ];
+
+    public function histories()
+    {
+        return $this->hasMany(BarangHistory::class)->orderBy('created_at', 'desc');
+    }
 }
