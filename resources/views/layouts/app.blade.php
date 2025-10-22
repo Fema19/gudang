@@ -28,6 +28,9 @@
                     <li class="nav-item">
                         <a href="{{ route('permintaan.index') }}" class="nav-link {{ request()->routeIs('permintaan.*') ? 'active' : '' }}">Permintaan</a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('infobarang.index') }}" class="nav-link {{ request()->routeIs('infobarang.*') ? 'active' : '' }}">Informasi Stock</a>
+                    </li>
                 </ul>
 
                 {{-- User Profile & Logout --}}

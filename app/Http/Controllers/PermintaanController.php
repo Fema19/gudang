@@ -182,7 +182,7 @@ class PermintaanController extends Controller
                 'permintaans.status',
                 'permintaans.tanda_tangan',
                 'permintaans.created_at',
-                DB::raw('GROUP_CONCAT(DISTINCT barangs.nama_barang SEPARATOR ", ") as daftar_barang'),
+                DB::raw('GROUP_CONCAT(CONCAT(barangs.nama_barang, " (", permintaan_items.jumlah, ")") SEPARATOR ", ") as daftar_barang'),
                 DB::raw('SUM(permintaan_items.jumlah) as total_barang')
             )
             ->whereYear('permintaans.created_at', $year)
@@ -218,8 +218,9 @@ class PermintaanController extends Controller
                 'selectedMonth' => $month,
                 'selectedYear' => $year,
                 'selectedMonthName' => $selectedMonthName
-            ]);
+        ]);
     }
+
 
 
     public function exportStatsPdf(Request $request)

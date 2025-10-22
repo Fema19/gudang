@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\OperatorAuthController;
+use App\Http\Controllers\InfoBarangController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,5 +61,9 @@ Route::prefix('operator')->group(function () {
     Route::get('/permintaan/stats', [PermintaanController::class, 'stats'])->name('permintaan.stats');
     // Export statistik (PDF/HTML)
     Route::get('/permintaan/stats/export', [PermintaanController::class, 'exportStatsPdf'])->name('permintaan.stats.export');
+
+    // Info Masuk/Keluar Barang
+    Route::get('/infobarang', [InfoBarangController::class, 'masuk'])->name('infobarang.index');
+    Route::get('/infobarang/keluar', [InfoBarangController::class, 'keluar'])->name('infobarang.keluar');
 });
 
