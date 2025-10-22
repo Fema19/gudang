@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Barang;
 use App\Models\BarangKeluar;
+use App\Models\BarangHistory;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 
@@ -25,11 +26,12 @@ class InfoBarangController extends Controller
      */
     public function keluar(Request $request)
     {
-        // Ambil semua data barang keluar beserta relasi barangnya
-        $barangKeluars = BarangKeluar::with('barang')
-            ->orderBy('tanggal_keluar', 'desc')
+        // Ambil semua riwayat pengeluaran dari barang_histories
+        $keluarHistories = BarangHistory::with('barang')
+            ->where('type', 'keluar')
+            ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('operator.infobarang.keluar', compact('barangKeluars'));
+        return view('operator.infobarang.keluar', compact('keluarHistories'));
     }
 }

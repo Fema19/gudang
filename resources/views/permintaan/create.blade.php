@@ -8,6 +8,32 @@
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{{ asset('css/barang.css') }}" rel="stylesheet">
+  <style>
+    /* modal stok image preview size */
+    .preview-img-modal {
+      max-width: 160px;
+      max-height: 120px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .barang-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .barang-card {
+      border: 1px solid #e9ecef;
+      padding: 10px;
+      border-radius: 8px;
+      background: #fff;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
   <!-- Navbar -->

@@ -36,7 +36,7 @@
                                     <th style="width:5%">No</th>
                                     <th>Jenis Barang</th>
                                     <th style="width:12%">Tipe Event</th>
-                                    <th style="width:10%">Stok</th>
+                                    <th style="width:10%">Stok Masuk</th>
                                     <th style="width:10%">Sebelum</th>
                                     <th style="width:10%">Sesudah</th>
                                     <th style="width:20%">Tanggal / Waktu</th>
@@ -47,10 +47,12 @@
                                     // flatten semua histories dari barangs menjadi satu collection
                                     $allHistories = collect();
                                     foreach($barangs as $b) {
-                                        foreach($b->histories as $h) {
-                                            $h->barang = $b; // attach barang untuk akses nama
-                                            $allHistories->push($h);
-                                        }
+                                            foreach($b->histories as $h) {
+                                                // exclude keluar events from the 'masuk' page
+                                                if ($h->type === 'keluar') continue;
+                                                $h->barang = $b; // attach barang untuk akses nama
+                                                $allHistories->push($h);
+                                            }
                                     }
                                     // urutkan berdasarkan waktu (desc)
                                     $allHistories = $allHistories->sortByDesc('created_at')->values();

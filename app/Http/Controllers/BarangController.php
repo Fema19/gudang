@@ -39,8 +39,12 @@ class BarangController extends Controller
         ]);
 
         // Generate kode otomatis: BRG001, BRG002, dst
-        $lastBarang = Barang::latest('id')->first();
-        $nextNumber = $lastBarang ? ((int) substr($lastBarang->kode_barang, 3)) + 1 : 1;
+        // include trashed records to avoid duplicating kode when soft-deleted items exist
+        $lastBarang = Barang::withTrashed()->orderBy('id', 'desc')->first();
+        $nextNumber = 1;
+        if ($lastBarang && !empty($lastBarang->kode_barang) && preg_match('/BRG(\d+)/', $lastBarang->kode_barang, $m)) {
+            $nextNumber = ((int) $m[1]) + 1;
+        }
         $kode_barang = 'BRG' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 
         $data = [
@@ -56,17 +60,49 @@ class BarangController extends Controller
             $data['foto'] = $path;
         }
 
-        $barang = Barang::create($data);
+        // create inside transaction with small retry loop to avoid kode_barang duplicate in race conditions
+        $attempt = 0;
+        $barang = null;
+        while ($attempt < 3) {
+            try {
+                \DB::beginTransaction();
+                $barang = Barang::create($data);
 
-        // record creation history
-        BarangHistory::create([
-            'barang_id' => $barang->id,
-            'type' => 'created',
-            'qty' => $barang->stok,
-            'stok_before' => null,
-            'stok_after' => $barang->stok,
-            'note' => 'Barang dibuat',
-        ]);
+                // record creation history
+                BarangHistory::create([
+                    'barang_id' => $barang->id,
+                    'type' => 'created',
+                    'qty' => $barang->stok,
+                    'stok_before' => null,
+                    'stok_after' => $barang->stok,
+                    'note' => 'Barang dibuat',
+                ]);
+
+                \DB::commit();
+                break;
+            } catch (\Illuminate\Database\QueryException $e) {
+                \DB::rollBack();
+                $attempt++;
+                // if duplicate kode_barang, try regenerate kode and retry
+                if ($e->getCode() == '23000') {
+                    // regenerate next kode using latest id
+                    $lastBarang = Barang::withTrashed()->orderBy('id', 'desc')->first();
+                    $nextNumber = 1;
+                    if ($lastBarang && !empty($lastBarang->kode_barang) && preg_match('/BRG(\d+)/', $lastBarang->kode_barang, $m)) {
+                        $nextNumber = ((int) $m[1]) + 1 + $attempt; // bump by attempt to reduce collision
+                    }
+                    $data['kode_barang'] = 'BRG' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+                    usleep(200000); // wait 200ms before retry
+                    continue;
+                }
+
+                throw $e;
+            }
+        }
+
+        if (!$barang) {
+            throw new \Exception('Gagal membuat barang setelah beberapa percobaan.');
+        }
 
         return redirect()->route('barang.index')->with('success', 'Barang berhasil ditambahkan.');
     }

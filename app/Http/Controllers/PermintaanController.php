@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Permintaan;
 use App\Models\Barang;
+use App\Models\BarangHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -107,8 +108,20 @@ class PermintaanController extends Controller
                         throw new \Exception("Stok untuk {$barang->nama_barang} tidak mencukupi");
                     }
 
+                    $stokBefore = $barang->stok;
+
                     $barang->stok -= $item->jumlah;
                     $barang->save();
+
+                    // record history pengeluaran untuk setiap item
+                    BarangHistory::create([
+                        'barang_id' => $barang->id,
+                        'type' => 'keluar',
+                        'qty' => $item->jumlah,
+                        'stok_before' => $stokBefore,
+                        'stok_after' => $barang->stok,
+                        'note' => "Pengeluaran untuk permintaan #{$permintaan->id} - {$permintaan->nama_peminta}",
+                    ]);
                 }
 
                 $permintaan->update(['status' => 'selesai']);

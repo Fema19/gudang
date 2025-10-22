@@ -31,20 +31,21 @@
                                 <tr>
                                     <th style="width: 5%">No</th>
                                     <th>Jenis Barang</th>
-                                    <th style="width: 10%">Keluar</th>
-                                    <th style="width: 10%">Sisa Stok</th>
-                                    <th style="width: 20%">Tanggal Keluar</th>
+                                    <th style="width: 12%">Keluar</th>
+                                    <th style="width: 12%">Sisa Stok</th>
+                                    <th style="width: 25%">Tanggal / Waktu</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($barangKeluars as $index => $keluar)
+                                @forelse ($keluarHistories as $index => $h)
                                     <tr>
                                         <td class="text-center">{{ $index + 1 }}</td>
-                                        <td>{{ $keluar->barang->nama_barang ?? '-' }}</td>
-                                        <td class="text-center">{{ $keluar->jumlah_keluar ?? '-' }}</td>
-                                        <td class="text-center">{{ $keluar->barang->stok ?? '0' }}</td>
+                                        <td>{{ $h->barang->nama_barang ?? '-' }}</td>
+                                        <td class="text-center">{{ $h->qty ?? '-' }}</td>
+                                        <td class="text-center">{{ $h->stok_after ?? ($h->barang->stok ?? '0') }}</td>
                                         <td class="text-center">
-                                            {{ \Carbon\Carbon::parse($keluar->tanggal_keluar)->format('d M Y') }}
+                                            {{ \Carbon\Carbon::parse($h->created_at)->format('d M Y') }}<br>
+                                            <small class="text-muted">{{ \Carbon\Carbon::parse($h->created_at)->format('H:i:s') }}</small>
                                         </td>
                                     </tr>
                                 @empty
