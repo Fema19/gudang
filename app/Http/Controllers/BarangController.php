@@ -128,13 +128,24 @@ class BarangController extends Controller
      */
     public function destroy(Barang $barang)
     {
-        // delete foto file if exists
+        // only remove foto file, but keep the database record (soft delete)
         if (!empty($barang->foto) && \Storage::disk('public')->exists($barang->foto)) {
             \Storage::disk('public')->delete($barang->foto);
         }
 
+        // record deletion history
+        BarangHistory::create([
+            'barang_id' => $barang->id,
+            'type' => 'deleted',
+            'qty' => null,
+            'stok_before' => $barang->stok,
+            'stok_after' => null,
+            'note' => 'Barang dihapus',
+        ]);
+
+        // soft delete the barang so it won't be visible in stok list but still exists for info
         $barang->delete();
 
-        return redirect()->route('barang.index')->with('success', 'Barang berhasil dihapus.');
+        return redirect()->route('barang.index')->with('success', 'Barang berhasil dihapus (soft delete).');
     }
 }
