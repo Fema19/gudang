@@ -8,13 +8,14 @@
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{{ asset('css/barang.css') }}" rel="stylesheet">
+
+  <!-- Select2 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
   <style>
-    /* modal stok image preview size */
     .preview-img-modal {
       max-width: 160px;
       max-height: 120px;
-      width: auto;
-      height: auto;
       object-fit: contain;
       border-radius: 6px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
@@ -32,6 +33,18 @@
       border-radius: 8px;
       background: #fff;
       text-align: center;
+    }
+
+    /* Gaya tambahan untuk Select2 */
+    .select2-container .select2-selection--single {
+      height: 38px;
+      padding: 5px 8px;
+      border: 1px solid #ced4da;
+      border-radius: 6px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+      height: 36px;
+      right: 8px;
     }
   </style>
 </head>
@@ -72,12 +85,13 @@
         </button>
       </div>
 
-       <form action="{{ route('permintaan.store') }}" method="POST" enctype="multipart/form-data" id="multiForm">
+      <form action="{{ route('permintaan.store') }}" method="POST" enctype="multipart/form-data" id="multiForm">
         @csrf
 
+        <!-- Dropdown Barang -->
         <div class="mb-3">
           <label>Barang</label>
-          <select id="barangSelect" class="form-select">
+          <select id="barangSelect" class="form-select js-example-basic-single">
             <option value="">Pilih Barang</option>
             @foreach ($barangs as $b)
               <option value="{{ $b->id }}" data-nama="{{ $b->nama_barang }}" data-stok="{{ $b->stok }}">
@@ -97,7 +111,7 @@
           <input type="text" name="nama_ruangan" class="form-control" required>
         </div>
 
-        <!-- 🖊️ Area Tanda Tangan -->
+        <!-- ✍️ Tanda Tangan -->
         <div class="mb-4">
           <label for="signature" class="form-label fw-semibold">Tanda Tangan Peminta</label>
           <p class="text-muted small mb-2">Silakan tanda tangan di bawah ini menggunakan mouse atau sentuhan layar.</p>
@@ -110,10 +124,10 @@
             <button type="button" class="btn btn-sm btn-secondary" id="clear-signature">Hapus</button>
           </div>
 
-          <!-- Hidden input untuk menyimpan hasil tanda tangan -->
           <input type="hidden" name="tanda_tangan" id="tanda_tangan">
         </div>
 
+        <!-- 📦 Daftar Barang Dipilih -->
         <div id="barangList" class="mt-4">
           <h6 class="mb-3 fw-semibold text-secondary">Daftar Barang Dipilih</h6>
           <p class="text-muted small" id="emptyText">Belum ada barang dipilih.</p>
@@ -126,7 +140,7 @@
     </div>
   </div>
 
-  <!-- Modal Stok -->
+  <!-- 🧾 Modal Stok -->
   <div class="modal fade" id="stokModal" tabindex="-1" aria-labelledby="stokModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content border-0">
@@ -159,26 +173,33 @@
     </div>
   </div>
 
-  <!-- Bootstrap JS -->
+  <!-- JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <!-- Signature Pad Library -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
+      // ✅ Aktifkan fitur search Select2
+      $('.js-example-basic-single').select2({
+        placeholder: "Cari atau pilih barang...",
+        allowClear: true,
+        width: '100%'
+      });
+
       const select = document.getElementById("barangSelect");
       const list = document.getElementById("barangList");
       const emptyText = document.getElementById("emptyText");
 
-      select.addEventListener("change", function () {
-        const selectedOption = this.options[this.selectedIndex];
+      // Tambah barang ke daftar saat dipilih
+      $('#barangSelect').on('select2:select', function (e) {
+        const selectedOption = e.params.data.element;
         const id = selectedOption.value;
         const nama = selectedOption.dataset.nama;
         const stok = selectedOption.dataset.stok;
 
-        if (!id) return;
-        if (document.getElementById(`barang-item-${id}`)) return;
+        if (!id || document.getElementById(`barang-item-${id}`)) return;
 
         emptyText.style.display = "none";
 
@@ -204,9 +225,12 @@
           </div>
         `;
         list.appendChild(div);
-        this.value = "";
+
+        // reset dropdown setelah pilih
+        $('#barangSelect').val(null).trigger('change');
       });
 
+      // Tombol tambah/kurang/hapus barang
       list.addEventListener("click", function (e) {
         if (e.target.classList.contains("plus-btn")) {
           const input = e.target.parentElement.querySelector("input[type='number']");
@@ -220,22 +244,16 @@
         }
       });
 
-      // ✍️ Inisialisasi Signature Pad
+      // ✍️ Inisialisasi tanda tangan
       const canvas = document.getElementById("signature-pad");
       const signaturePad = new SignaturePad(canvas);
       const clearBtn = document.getElementById("clear-signature");
       const inputTandaTangan = document.getElementById("tanda_tangan");
 
-      // Tombol hapus
       clearBtn.addEventListener("click", () => signaturePad.clear());
 
-      // Sebelum submit, simpan tanda tangan ke hidden input (tidak wajib)
       document.getElementById("multiForm").addEventListener("submit", function (e) {
-        if (!signaturePad.isEmpty()) {
-          inputTandaTangan.value = signaturePad.toDataURL("image/png");
-        } else {
-          inputTandaTangan.value = "";
-        }
+        inputTandaTangan.value = signaturePad.isEmpty() ? "" : signaturePad.toDataURL("image/png");
       });
     });
   </script>

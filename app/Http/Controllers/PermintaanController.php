@@ -12,21 +12,36 @@ use Carbon\Carbon;
 
 class PermintaanController extends Controller
 {
-    // Menampilkan semua permintaan untuk operator
-    public function index()
+    // 🔹 Menampilkan semua permintaan untuk operator (dengan fitur pencarian)
+    public function index(Request $request)
     {
-        $permintaans = Permintaan::with('barang')->latest()->get();
+        $query = Permintaan::with(['items.barang'])->latest();
+
+        // Jika ada kata kunci pencarian
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_peminta', 'like', "%{$search}%")
+                  ->orWhereHas('items.barang', function ($sub) use ($search) {
+                      $sub->where('nama_barang', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $permintaans = $query->paginate(10);
+
         return view('operator.permintaan.index', compact('permintaans'));
     }
 
-    // Form tambah permintaan (untuk user)
+    // 🔹 Form tambah permintaan
     public function create()
     {
         $barangs = Barang::all();
         return view('permintaan.create', compact('barangs'));
     }
 
-    // 🔹 Simpan permintaan baru + tanda tangan (OPSIONAL)
+    // 🔹 Simpan permintaan baru + tanda tangan (opsional)
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -36,10 +51,9 @@ class PermintaanController extends Controller
             'barangs.*.barang_id' => 'required|exists:barangs,id',
             'barangs.*.jumlah' => 'required|integer|min:1',
             'barangs.*.catatan' => 'nullable|string|max:255',
-            'tanda_tangan' => 'nullable|string', // ← pakai tanda_tangan, bukan signature
+            'tanda_tangan' => 'nullable|string',
         ]);
 
-        // 1️⃣ Buat permintaan utama (sementara tanpa jumlah)
         $permintaan = Permintaan::create([
             'nama_peminta' => $validated['nama_peminta'],
             'nama_ruangan' => $validated['nama_ruangan'],
@@ -49,7 +63,6 @@ class PermintaanController extends Controller
 
         $totalJumlah = 0;
 
-        // 2️⃣ Simpan item barang satu per satu
         foreach ($validated['barangs'] as $item) {
             $permintaan->items()->create([
                 'barang_id' => $item['barang_id'],
@@ -59,34 +72,24 @@ class PermintaanController extends Controller
             $totalJumlah += $item['jumlah'];
         }
 
-        // 3️⃣ Simpan tanda tangan (jika ada)
+        // Simpan tanda tangan jika ada
         if (!empty($validated['tanda_tangan'])) {
             $imageData = $validated['tanda_tangan'];
-
             if (preg_match('/^data:image\/png;base64,/', $imageData)) {
                 $imageData = substr($imageData, strpos($imageData, ',') + 1);
                 $imageData = str_replace(' ', '+', $imageData);
                 $imageName = 'tanda_tangan_' . $permintaan->id . '_' . time() . '.png';
-
-                // Simpan ke storage/app/public/tanda_tangan/
                 Storage::disk('public')->put('tanda_tangan/' . $imageName, base64_decode($imageData));
-
-                // Simpan path di database
-                $permintaan->update([
-                    'tanda_tangan' => 'tanda_tangan/' . $imageName,
-                ]);
+                $permintaan->update(['tanda_tangan' => 'tanda_tangan/' . $imageName]);
             }
         }
 
-        // 4️⃣ Update total jumlah ke tabel permintaans
         $permintaan->update(['jumlah' => $totalJumlah]);
 
-        return redirect()->route('permintaan.create')
-            ->with('success', 'Permintaan berhasil dikirim ke operator.');
+        return redirect()->route('permintaan.create')->with('success', 'Permintaan berhasil dikirim ke operator.');
     }
 
-    // ------------------------ Fungsi lainnya tetap sama ------------------------
-
+    // 🔹 Update status permintaan
     public function updateStatus($id)
     {
         $permintaan = Permintaan::with('items.barang')->findOrFail($id);
@@ -113,7 +116,6 @@ class PermintaanController extends Controller
                     $barang->stok -= $item->jumlah;
                     $barang->save();
 
-                    // record history pengeluaran untuk setiap item
                     BarangHistory::create([
                         'barang_id' => $barang->id,
                         'type' => 'keluar',
@@ -133,6 +135,7 @@ class PermintaanController extends Controller
         return redirect()->route('permintaan.index')->with('success', 'Permintaan telah diselesaikan.');
     }
 
+    // 🔹 Tolak permintaan
     public function reject(Request $request, $id)
     {
         $request->validate([
@@ -150,18 +153,22 @@ class PermintaanController extends Controller
         return redirect()->route('permintaan.index')->with('error', 'Permintaan ditolak.');
     }
 
+    // 🔹 Clear data yang sudah diproses
     public function clear()
     {
         $deletedCount = Permintaan::where('status', '!=', 'pending')->delete();
-        return redirect()->route('permintaan.index')->with('success', "Berhasil memindahkan {$deletedCount} riwayat permintaan yang sudah diproses ke trash (soft deleted). Anda dapat memulihkannya lewat fitur restore jika diperlukan.");
+        return redirect()->route('permintaan.index')
+            ->with('success', "Berhasil memindahkan {$deletedCount} riwayat permintaan ke trash.");
     }
 
+    // 🔹 Tampilkan trash
     public function trash()
     {
         $permintaans = Permintaan::onlyTrashed()->with('barang')->latest('deleted_at')->get();
         return view('operator.permintaan.trash', compact('permintaans'));
     }
 
+    // 🔹 Restore 1 data
     public function restore($id)
     {
         $permintaan = Permintaan::withTrashed()->findOrFail($id);
@@ -169,17 +176,20 @@ class PermintaanController extends Controller
         return redirect()->route('permintaan.trash')->with('success', 'Permintaan berhasil dipulihkan.');
     }
 
+    // 🔹 Restore semua data
     public function restoreAll()
     {
         $restored = Permintaan::onlyTrashed()->restore();
         return redirect()->route('permintaan.trash')->with('success', "Berhasil memulihkan {$restored} permintaan.");
     }
 
+    // 🔹 Notifikasi user
     public function notif()
     {
         return view('user.notif');
     }
 
+    // 🔹 Statistik
     public function stats(Request $request)
     {
         $month = (int) $request->query('month', now()->month);
@@ -219,23 +229,17 @@ class PermintaanController extends Controller
                 'total' => (int) $r->total_barang,
                 'status' => $r->status,
                 'tanda_tangan' => $r->tanda_tangan,
-                'tanggal' => \Carbon\Carbon::parse($r->created_at)->isoFormat('D MMMM YYYY'),
-                'jam' => \Carbon\Carbon::parse($r->created_at)->format('H:i'),
+                'tanggal' => Carbon::parse($r->created_at)->isoFormat('D MMMM YYYY'),
+                'jam' => Carbon::parse($r->created_at)->format('H:i'),
             ];
         })->toArray();
 
-        $selectedMonthName = \Carbon\Carbon::create($year, $month, 1)->locale('id')->isoFormat('MMMM');
+        $selectedMonthName = Carbon::create($year, $month, 1)->locale('id')->isoFormat('MMMM');
 
-        return view('operator.permintaan.stats', compact('stats', 'month', 'year'))
-            ->with([
-                'selectedMonth' => $month,
-                'selectedYear' => $year,
-                'selectedMonthName' => $selectedMonthName
-        ]);
+        return view('operator.permintaan.stats', compact('stats', 'month', 'year', 'selectedMonthName'));
     }
 
-
-
+    // 🔹 Export PDF Statistik
     public function exportStatsPdf(Request $request)
     {
         $month = (int) $request->query('month', Carbon::now()->month);
@@ -259,7 +263,7 @@ class PermintaanController extends Controller
             ->orderByDesc('permintaans.created_at')
             ->get();
 
-        $stats = $rows->map(function($r){
+        $stats = $rows->map(function ($r) {
             $dt = Carbon::parse($r->created_at)->setTimezone('Asia/Jakarta');
             return [
                 'barang' => $r->barang,
@@ -286,7 +290,6 @@ class PermintaanController extends Controller
             return $pdf->download($fileName);
         }
 
-        return view('operator.permintaan.stats_print', compact('stats'))
-            ->with(['selectedMonth' => $month, 'selectedYear' => $year, 'selectedMonthName' => $selectedMonthName]);
+        return view('operator.permintaan.stats_print', compact('stats', 'selectedMonthName', 'month', 'year'));
     }
 }

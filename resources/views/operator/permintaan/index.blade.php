@@ -5,19 +5,36 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">Daftar Permintaan Barang</h4>
 
-        <div class="dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="actionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                Actions
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown">
-                <li>
-                    <a class="dropdown-item" href="{{ route('permintaan.trash') }}">Trash</a>
-                    <a class="dropdown-item" href="{{ route('permintaan.stats') }}">Statistik</a>
-                </li>
-                <li>
-                    <button class="dropdown-item text-danger" type="button" data-bs-toggle="modal" data-bs-target="#clearModal">Clear (soft-delete)</button>
-                </li>
-            </ul>
+        <div class="d-flex align-items-center gap-2">
+            <!-- Form Search -->
+            <form action="{{ route('permintaan.index') }}" method="GET" class="d-flex">
+                <input 
+                    type="text" 
+                    name="search" 
+                    class="form-control form-control-sm me-2" 
+                    placeholder="Cari nama atau barang..." 
+                    value="{{ request('search') }}"
+                >
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-search"></i> Cari
+                </button>
+            </form>
+
+            <!-- Dropdown Actions -->
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle btn-sm" type="button" id="actionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Actions
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="actionsDropdown">
+                    <li>
+                        <a class="dropdown-item" href="{{ route('permintaan.trash') }}">Trash</a>
+                        <a class="dropdown-item" href="{{ route('permintaan.stats') }}">Statistik</a>
+                    </li>
+                    <li>
+                        <button class="dropdown-item text-danger" type="button" data-bs-toggle="modal" data-bs-target="#clearModal">Clear (soft-delete)</button>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <!-- Modal konfirmasi Clear -->
@@ -64,9 +81,10 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($permintaans as $p)
+            @forelse ($permintaans as $p)
                 <tr>
-                    <td>{{ $loop->iteration }}</td>
+                    {{-- Nomor berkelanjutan antar halaman --}}
+                    <td>{{ $permintaans->firstItem() + $loop->index }}</td>
 
                     {{-- Barang yang diminta --}}
                     <td class="text-start">
@@ -150,8 +168,17 @@
                         @endif
                     </td>
                 </tr>
-            @endforeach
+            @empty
+                <tr>
+                    <td colspan="8" class="text-muted">Tidak ada data ditemukan.</td>
+                </tr>
+            @endforelse
         </tbody>
     </table>
+
+    {{-- Pagination links (Bootstrap 5) --}}
+    <div class="d-flex justify-content-center mt-3">
+        {{ $permintaans->appends(['search' => request('search')])->links('pagination::bootstrap-5') }}
+    </div>
 </div>
 @endsection

@@ -1,0 +1,5 @@
+jika mengubah sesuatu yang berada di dalam folder seeder, setelah nya jalankan perintah "php artisan db:seed"
+jika gagal jalankan "php artisan db:seed --class=<nama file seeder>
+
+
+jika mengubah sesuatu di file migration, setelah nya jalankan perintah "php artisan migrate"

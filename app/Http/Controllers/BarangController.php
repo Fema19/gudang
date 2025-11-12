@@ -11,11 +11,22 @@ class BarangController extends Controller
     /**
      * Tampilkan daftar barang.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $barangs = Barang::latest()->get();
-        return view('operator.barang.index', compact('barangs'));
+        $search = $request->input('search');
+
+        $barangs = Barang::query()
+            ->when($search, function ($query, $search) {
+                $query->where('nama_barang', 'like', "%{$search}%");
+            })
+            ->latest() // urutkan data terbaru di atas
+            ->paginate(15) // batas 15 data per halaman
+            ->withQueryString(); // agar query ?search tetap ada saat pindah halaman
+
+        return view('operator.barang.index', compact('barangs', 'search'));
     }
+
+
 
     /**
      * Form tambah barang.

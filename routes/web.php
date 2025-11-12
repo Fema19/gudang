@@ -63,7 +63,18 @@ Route::prefix('operator')->group(function () {
     Route::get('/permintaan/stats/export', [PermintaanController::class, 'exportStatsPdf'])->name('permintaan.stats.export');
 
     // Info Masuk/Keluar Barang
+    // Info Masuk/Keluar Barang
     Route::get('/infobarang', [InfoBarangController::class, 'masuk'])->name('infobarang.index');
+    Route::get('/infobarang/masuk', [InfoBarangController::class, 'masuk'])->name('infobarang.masuk');
     Route::get('/infobarang/keluar', [InfoBarangController::class, 'keluar'])->name('infobarang.keluar');
+    // Export PDF
+    Route::get('/infobarang/masuk/export', [InfoBarangController::class, 'exportMasukPdf'])->name('infobarang.masuk.export');
+    Route::get('/infobarang/keluar/export', [InfoBarangController::class, 'exportKeluarPdf'])->name('infobarang.keluar.export');
+    // Delete / Clear actions for info barang
+    Route::delete('/infobarang/masuk/{history}', [InfoBarangController::class, 'destroyHistory'])->name('infobarang.masuk.destroy');
+    Route::post('/infobarang/keluar/{barang}/clear', [InfoBarangController::class, 'clearKeluarByBarang'])->name('infobarang.keluar.clear');
+    // Clear all histories (masuk / keluar)
+    Route::post('/infobarang/masuk/clear-all', [InfoBarangController::class, 'clearAllMasuk'])->name('infobarang.masuk.clearAll');
+    Route::post('/infobarang/keluar/clear-all', [InfoBarangController::class, 'clearAllKeluar'])->name('infobarang.keluar.clearAll');
 });
 
